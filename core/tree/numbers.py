@@ -1,17 +1,17 @@
-from methods import Add, Sub, Mul, TrueDiv, Pow, Neg, Pos, Abs, \
-    FloorDiv, Mod, DivMod, LShift, RShift, And, Xor, Or, Invert
+from methods import Add, Sub, Mul, TrueDiv, Pow, Neg, Pos, Abs, FloorDiv, Mod, \
+    DivMod, LShift, RShift, And, Xor, Or, Invert, Lt, Le, Eq, Ne, Gt, Ge
 from node import FuncLike
 
 
 class Complex(FuncLike):  # C
     __slots__ = ()
-    methods = {Add, Sub, Mul, TrueDiv, Pow, Neg, Pos, Abs}
+    methods = {Add, Sub, Mul, TrueDiv, Pow, Neg, Pos, Abs, Eq, Ne}
     name = 'complex'
 
 
 class Float(Complex):  # R
     __slots__ = ()
-    methods = {*Complex.methods, FloorDiv, Mod, DivMod}
+    methods = {*Complex.methods, FloorDiv, Mod, DivMod, Lt, Le, Gt, Ge}
     name = 'float'
 
 
