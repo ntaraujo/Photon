@@ -61,7 +61,7 @@ class ClassFuncLike(FuncLike):
         self.parent = parent
 
 
-class Set(FuncLike):
+class SetVar(FuncLike):
     __slots__ = 'var'
 
     def __init__(self, var, *args, **kwargs):
@@ -76,7 +76,7 @@ class Set(FuncLike):
             self.block.vars[self.var] = Var(self)
 
 
-class GlobalSet(FuncLike):
+class GlobalSetVar(FuncLike):
     __slots__ = 'var'
 
     def __init__(self, var, *args, **kwargs):
@@ -94,7 +94,7 @@ class GlobalSet(FuncLike):
             block.vars[self.var] = Var(self)
 
 
-class Get(FuncLike):
+class GetVar(FuncLike):
     __slots__ = 'var'
 
     def __init__(self, var, *args, **kwargs):
@@ -116,7 +116,7 @@ class Get(FuncLike):
         return self.var.values
 
 
-class Del(Node):
+class DelVar(Node):
     __slots__ = 'var'
 
     def __init__(self, var, *args, **kwargs):
