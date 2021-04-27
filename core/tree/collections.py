@@ -59,7 +59,6 @@ class MutableSet(Set):
 
 class Mapping(Collection):
     __slots__ = ()
-    a = []
 
 
 class MutableMapping(Mapping):
