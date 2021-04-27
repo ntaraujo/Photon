@@ -121,3 +121,183 @@ class Abs(UnaryOperation):
 class Invert(UnaryOperation):
     __slots__ = ()
     name = '__invert__'
+
+
+class Contains(BinaryOperation):
+    __slots__ = ()
+    name = '__contains__'
+
+
+class Hash(UnaryOperation):
+    __slots__ = ()
+    name = '__hash__'
+
+
+class Iter(UnaryOperation):
+    __slots__ = ()
+    name = '__iter__'
+
+
+class Len(UnaryOperation):
+    __slots__ = ()
+    name = '__len__'
+
+
+class Call(BinaryOperation):
+    __slots__ = ()
+    name = '__call__'
+
+
+class Next(UnaryOperation):
+    __slots__ = ()
+    name = '__next__'
+
+
+class Reversed(UnaryOperation):
+    __slots__ = ()
+    name = '__reversed__'
+
+
+class GetItem(BinaryOperation):
+    __slots__ = ()
+    name = '__getitem__'
+
+
+class SetItem(BinaryOperation):
+    __slots__ = ()
+    name = '__setitem__'
+
+
+class DelItem(BinaryOperation):
+    __slots__ = ()
+    name = '__delitem__'
+
+
+class Missing(BinaryOperation):
+    __slots__ = ()
+    name = '__missing__'
+
+
+class Bool(UnaryOperation):
+    __slots__ = ()
+    name = '__bool__'
+
+
+class New(BinaryOperation):
+    __slots__ = ()
+    name = '__new__'
+
+
+class Init(BinaryOperation):
+    __slots__ = ()
+    name = '__init__'
+
+
+class Del(UnaryOperation):
+    __slots__ = ()
+    name = '__del__'
+
+
+class Repr(UnaryOperation):
+    __slots__ = ()
+    name = '__repr__'
+
+
+class Str(UnaryOperation):
+    __slots__ = ()
+    name = '__str__'
+
+
+class Bytes(UnaryOperation):
+    __slots__ = ()
+    name = '__bytes__'
+
+
+class Format(UnaryOperation):
+    __slots__ = ()
+    name = '__format__'
+
+
+class Lt(BinaryOperation):
+    __slots__ = ()
+    name = '__lt__'
+
+
+class Le(BinaryOperation):
+    __slots__ = ()
+    name = '__le__'
+
+
+class Eq(BinaryOperation):
+    __slots__ = ()
+    name = '__eq__'
+
+
+class Ne(BinaryOperation):
+    __slots__ = ()
+    name = '__ne__'
+
+
+class Gt(BinaryOperation):
+    __slots__ = ()
+    name = '__gt__'
+
+
+class Ge(BinaryOperation):
+    __slots__ = ()
+    name = '__ge__'
+
+
+class GetAttr(BinaryOperation):
+    __slots__ = ()
+    name = '__getattr__'
+
+
+class GetAttribute(BinaryOperation):
+    __slots__ = ()
+    name = '__getattribute__'
+
+
+class Dir(BinaryOperation):
+    __slots__ = ()
+    name = '__dir__'
+
+
+class Get(BinaryOperation):
+    __slots__ = ()
+    name = '__get__'
+
+
+class Set(BinaryOperation):
+    __slots__ = ()
+    name = '__set__'
+
+
+class Delete(BinaryOperation):
+    __slots__ = ()
+    name = '__delete__'
+
+
+class SetName(BinaryOperation):
+    __slots__ = ()
+    name = '__set_name__'
+
+
+class InstanceCheck(BinaryOperation):
+    __slots__ = ()
+    name = '__instancecheck__'
+
+
+class SubClassCheck(BinaryOperation):
+    __slots__ = ()
+    name = '__subclasscheck__'
+
+
+class LengthHint(BinaryOperation):
+    __slots__ = ()
+    name = '__length_hint__'
+
+
+class Le(BinaryOperation):
+    __slots__ = ()
+    name = '__le__'
