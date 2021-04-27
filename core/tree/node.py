@@ -61,6 +61,10 @@ class ClassFuncLike(FuncLike):
         self.parent = parent
 
 
+class Arguments(FuncLike):
+    __slots__ = ()
+
+
 class SetVar(FuncLike):
     __slots__ = 'var'
 
