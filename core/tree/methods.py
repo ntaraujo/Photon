@@ -298,6 +298,6 @@ class LengthHint(BinaryOperation):
     name = '__length_hint__'
 
 
-class Le(BinaryOperation):
+class Raw(UnaryOperation):
     __slots__ = ()
-    name = '__le__'
+    name = '__raw__'
