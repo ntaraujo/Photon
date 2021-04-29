@@ -16,12 +16,7 @@ class Var:
         self.deleters.append(deleter)
 
     def __get_values(self):
-        values = []
-        for setter in self.setters:
-            for value in setter.values:
-                if value not in values:
-                    values.append(value)
-        return values
+        return list({value for setter in self.setters for value in setter.values})
 
     def values_for_node(self):
         values = {}
