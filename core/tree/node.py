@@ -1,138 +1,140 @@
-from error import Raise
+from control import Raise
 from var import Var
 total = 0
 
 
-class Node:
-    __slots__ = 'id', 'block', '__param', 'line_slice'
+class NodeBase:
+    __slots__ = 'id', 'block', '__params'
 
-    def __init__(self, line_slice, block):
-        self.__param = None
+    def __init__(self, block):
+        self.__params = []
         self.block = block
-        self.line_slice = line_slice
         global total
         self.id = total = total + 1
 
-    def __get_param(self):
-        return self.get_param()
+    def __get_params(self):
+        return self.get_params()
 
-    def __set_param(self, param):
-        self.set_param(param)
+    def __set_params(self, params):
+        self.set_params(params)
 
-    def get_param(self):
-        return self.__param
+    def get_params(self):
+        return self.__params
 
-    def set_param(self, param):
-        self.__param = param
+    def set_params(self, params):
+        self.__params = params
 
-    param = property(__get_param, __set_param)
-    del __get_param, __set_param
+    def __get_name(self):
+        return self.get_name()
+
+    def get_name(self):
+        return self.__class__.__name__.lower()
+
+    params = property(__get_params, __set_params)
+    name = property(__get_name)
+    del __get_params, __set_params, __get_name
 
 
-class Value(Node):
+class Leaf(NodeBase):
     __slots__ = 'values'
 
-    def __init__(self, value, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, value, block):
+        super().__init__(block)
         self.values = [value]
 
 
-class FuncLike(Node):
-    __slots__ = ()
+class Node(NodeBase):
+    __slots__ = 'scope_block'
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, block):
+        super().__init__(block)
+        if block.name in ('def', 'module'):
+            self.scope_block = block
+        else:
+            self.scope_block = block.scope_block
 
     def __get_values(self):
         return self.get_values()
 
     def get_values(self):
-        return self.param.values
+        return self.params[-1].values
 
     values = property(__get_values)
     del __get_values
 
 
-class ClassFuncLike(FuncLike):
-    __slots__ = 'parent'
+class VarBase(Node):
+    __slots__ = '__var'
 
-    def __init__(self, parent, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.parent = parent
+    def __init__(self, block):
+        super().__init__(block)
+        self.__var = None
+
+    def get_values(self):
+        return self.__var.values
 
 
-class Arguments(FuncLike):
+class SetVar(VarBase):
     __slots__ = ()
 
-
-class SetVar(FuncLike):
-    __slots__ = 'var'
-
-    def __init__(self, var, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.var = var
-
-    def set_param(self, param):
-        super().set_param(param)
-        if self.var in self.block.vars:
-            self.block.vars[self.var].setter(self)
+    def set_params(self, params):
+        super().set_params(params)
+        block = self.scope_block
+        var = params[0].values[-1]
+        if var in block.vars:
+            block.vars[var].setter(self)
         else:
-            self.block.vars[self.var] = Var(self)
+            block.vars[var] = Var(self)
+        self.__var = block.vars[var]
 
 
-class GlobalSetVar(FuncLike):
-    __slots__ = 'var'
+class GlobalSetVar(VarBase):
+    __slots__ = ()
 
-    def __init__(self, var, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.var = var
-
-    def set_param(self, param):
-        super().set_param(param)
-        block = self.block
-        while block.block is not None:
-            block = block.block
-        if self.var in block.vars:
-            block.vars[self.var].setter(self)
+    def set_params(self, params):
+        super().set_params(params)
+        block = self.scope_block
+        var = params[0].values[-1]
+        if var in block.vars:
+            block.vars[var].setter(self)
         else:
-            block.vars[self.var] = Var(self)
+            block.vars[var] = Var(self)
+        self.__var = block.vars[var]
 
 
-class GetVar(FuncLike):
-    __slots__ = 'var'
+class GetVar(VarBase):
+    __slots__ = ()
 
-    def __init__(self, var, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.var = var
-        block = self.block
+    def set_params(self, params):
+        super().set_params(params)
+        block = self.scope_block
+        var = params[0].values[-1]
         while True:
             if var in block.vars:
                 block.vars[var].getter(self)
-                self.var = block.vars[var]
+                self.__var = block.vars[var]
                 break
             else:
                 try:
-                    block = block.block
+                    block = block.scope_block
                 except AttributeError:
-                    Raise(self, NameError, f"name '{var}' is not defined")
-
-    def get_values(self):
-        return self.var.values
+                    Raise(NameError, f"name '{var}' is not defined")
 
 
-class DelVar(Node):
-    __slots__ = 'var'
+class DelVar(VarBase):
+    __slots__ = ()
 
-    def __init__(self, var, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.var = var
-        block = self.block
+    def set_params(self, params):
+        super().set_params(params)
+        block = self.scope_block
+        var = params[0].values[-1]
         while True:
             if var in block.vars:
                 block.vars[var].deleter(self)
+                self.__var = block.vars[var]
                 break
             else:
                 try:
-                    block = block.block
+                    block = block.scope_block
                 except AttributeError:
-                    Raise(self, NameError, f"name '{var}' is not defined")
+                    Raise(NameError, f"name '{var}' is not defined")

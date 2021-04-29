@@ -1,23 +1,20 @@
 from methods import Add, Sub, Mul, TrueDiv, Pow, Neg, Pos, Abs, FloorDiv, Mod, \
     DivMod, LShift, RShift, And, Xor, Or, Invert, Lt, Le, Eq, Ne, Gt, Ge
-from node import FuncLike
+from node import Node
 
 
-class Complex(FuncLike):  # C
+class Complex(Node):  # C
     __slots__ = ()
     methods = {Add, Sub, Mul, TrueDiv, Pow, Neg, Pos, Abs, Eq, Ne}
-    name = 'complex'
 
 
 class Float(Complex):  # R
     __slots__ = ()
     methods = {*Complex.methods, FloorDiv, Mod, DivMod, Lt, Le, Gt, Ge}
-    name = 'float'
 
 
 class Exact(Float):  # Q
     __slots__ = ()
-    name = 'exact'
 
 
 class Integer(Float):  # Z
@@ -28,4 +25,3 @@ class Integer(Float):  # Z
 
 class Natural(Integer):  # N
     __slots__ = ()
-    name = 'natural'

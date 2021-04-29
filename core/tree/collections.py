@@ -1,23 +1,23 @@
-from node import FuncLike
+from node import Node
 
 
-class Container(FuncLike):
+class Container(Node):
     __slots__ = ()
 
 
-class Hashable(FuncLike):
+class Hashable(Node):
     __slots__ = ()
 
 
-class Iterable(FuncLike):
+class Iterable(Node):
     __slots__ = ()
 
 
-class Sized(FuncLike):
+class Sized(Node):
     __slots__ = ()
 
 
-class Callable(FuncLike):
+class Callable(Node):
     __slots__ = ()
 
 
