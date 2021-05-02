@@ -6,7 +6,7 @@ class Transpiler(BaseTranspiler):
         super().__init__(filename, **kwargs)
         self.filename = self.filename.replace('.w','.c')
         self.commentSymbol = '//'
-        self.imports = ['#include <stdio.h>', '#include <stdlib.h>']
+        self.imports = {'#include <stdio.h>', '#include <stdlib.h>', '#include <locale.h>'}
         self.funcIdentifier = '/*def*/'
         self.constructorName = 'new'
         self.block = {'typedef ','/*def*/', 'for ','while ','if ','else ', 'int main('}
@@ -27,6 +27,35 @@ class Transpiler(BaseTranspiler):
 
     def formatVarInit(self, name, varType):
         return f'{varType} {name};'
+    
+    def formatAssign(self, target, expr):
+        cast = None
+        if target['token'] == 'var':
+            variable = target['name']
+            if variable in self.currentScope:
+                if self.typeKnown(target['type']):
+                    # Casting to a different type
+                    varType = self.nativeType(target['type'])
+                    cast = varType
+                else:
+                    varType = ''
+            else:
+                if self.typeKnown(target['type']):
+                    # Type was explicit
+                    varType = self.nativeType(target['type'])
+                else:
+                    varType = self.nativeType(self.inferType(expr))
+        else:
+            raise SyntaxError(f'Format assign with variable {target} not implemented yet.')
+        formattedExpr = self.formatExpr(expr, cast=cast)
+        return f'{varType} {variable} = {formattedExpr};'
+
+    def formatExpr(self, value, cast=None):
+        #TODO: implement cast to type
+        return value['value']
+    
+    def div(self, arg1, arg2):
+        return {'value':f'({self.nativeType("float")}){arg1["value"]} / {arg2["value"]}', 'type':'float'}
 
     def formatPrint(self, value):
         if value['type'] == 'int':
@@ -35,14 +64,18 @@ class Transpiler(BaseTranspiler):
             return f'printf("%f\\n", {value["value"]});'
         elif value['type'] == 'str':
             return f'printf("%s\\n", {value["value"]});'
+        elif value['type'] == 'bool':
+            return f'if ({value["value"]} == 0) {{printf("False\\n");}} else {{printf("True\\n");}}'
         else:
             raise SyntaxError(f'Print function with token {value} not supported yet.')
 
     def write(self):
         boilerPlateStart = [
             'int main() {',
+            'setlocale(LC_ALL, "");',
         ]
         boilerPlateEnd = [
+            'return 0;',
             '}'
         ]
         indent = 0
@@ -55,6 +88,7 @@ class Transpiler(BaseTranspiler):
             self.filename = f'{moduleName}.c'
             boilerPlateStart = []
             boilerPlateEnd = []
+            del self.imports[0]
             del self.imports[0]
             del self.imports[0]
         with open(f'Sources/{self.filename}','w') as f:

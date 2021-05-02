@@ -90,12 +90,13 @@ def token2word(tokens):
             continue
         elif 'symbol' in t:
             phrase += t['symbol']
-        elif t['token'] in {'num', 'var', 'expr','print','printFunction',
-        'floatNumber', 'type'}:
+        elif t['token'] in {'num', 'var', 'expr','print','printFunc',
+        'floatNumber', 'type', 'assign','operator','group'}:
             phrase += t['token']
         else:
             raise Exception(f'Cannot convert the token {t["token"]} to a word')
-    return phrase
+        phrase += ' '
+    return phrase[:-1]
 
 def reduceToken(tokens):
     ''' Find patterns that can be reduced to a single token '''
@@ -110,6 +111,7 @@ def reduceToken(tokens):
     for pattern in patterns:
         for i in range(len(tokenList)):
             if pattern == tuple(tokenList[i:i+len(pattern)]):
+                print(pattern)
                 result = reduceToken(patterns[pattern](i+1,tokens))
                 if result == 'continue':
                     continue
