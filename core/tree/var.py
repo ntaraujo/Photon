@@ -1,22 +1,30 @@
 class Var:
     __slots__ = 'setters', 'getters', 'deleters'
 
-    def __init__(self, setter):
-        self.setters = [setter]
+    def __init__(self, *setters):
+        self.setters = [*setters]
         self.getters = []
         self.deleters = []
 
     def setter(self, setter):
-        self.setters.append(setter)
+        if setter not in self.setters:
+            self.setters.append(setter)
 
     def getter(self, getter):
-        self.getters.append(getter)
+        if getter not in self.getters:
+            self.getters.append(getter)
 
     def deleter(self, deleter):
-        self.deleters.append(deleter)
+        if deleter not in self.deleters:
+            self.deleters.append(deleter)
 
     def __get_values(self):
-        return list({value for setter in self.setters for value in setter.values})
+        values = []
+        for setter in self.setters:
+            for value in setter.values:
+                if value not in values:
+                    values.append(value)
+        return values
 
     def values_for_node(self):
         values = {}
@@ -26,3 +34,10 @@ class Var:
 
     values = property(__get_values)
     del __get_values
+
+
+class VarDict(dict):
+    def __getitem__(self, item):
+        if item not in self:
+            self[item] = Var()
+        return super().__getitem__(item)

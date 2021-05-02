@@ -4,11 +4,11 @@ total = 0
 
 
 class NodeBase:
-    __slots__ = 'id', 'block', '__params'
+    __slots__ = 'id', 'parent', '__params'
 
-    def __init__(self, block):
+    def __init__(self, parent):
         self.__params = []
-        self.block = block
+        self.parent = parent
         global total
         self.id = total = total + 1
 
@@ -38,20 +38,13 @@ class NodeBase:
 class Leaf(NodeBase):
     __slots__ = 'values'
 
-    def __init__(self, value, block):
-        super().__init__(block)
+    def __init__(self, value, parent):
+        super().__init__(parent)
         self.values = [value]
 
 
 class Node(NodeBase):
-    __slots__ = 'scope_block'
-
-    def __init__(self, block):
-        super().__init__(block)
-        if block.name in ('def', 'module'):
-            self.scope_block = block
-        else:
-            self.scope_block = block.scope_block
+    __slots__ = ()
 
     def __get_values(self):
         return self.get_values()
@@ -66,8 +59,8 @@ class Node(NodeBase):
 class VarBase(Node):
     __slots__ = '__var'
 
-    def __init__(self, block):
-        super().__init__(block)
+    def __init__(self, parent):
+        super().__init__(parent)
         self.__var = None
 
     def get_values(self):
@@ -79,27 +72,14 @@ class SetVar(VarBase):
 
     def set_params(self, params):
         super().set_params(params)
-        block = self.scope_block
+        block = self.params[1]
         var = params[0].values[-1]
-        if var in block.vars:
-            block.vars[var].setter(self)
-        else:
-            block.vars[var] = Var(self)
+        block.vars[var].setter(self)
         self.__var = block.vars[var]
 
 
 class GlobalSetVar(VarBase):
     __slots__ = ()
-
-    def set_params(self, params):
-        super().set_params(params)
-        block = self.scope_block
-        var = params[0].values[-1]
-        if var in block.vars:
-            block.vars[var].setter(self)
-        else:
-            block.vars[var] = Var(self)
-        self.__var = block.vars[var]
 
 
 class GetVar(VarBase):
@@ -107,7 +87,7 @@ class GetVar(VarBase):
 
     def set_params(self, params):
         super().set_params(params)
-        block = self.scope_block
+        block = self.params[1]
         var = params[0].values[-1]
         while True:
             if var in block.vars:
@@ -126,7 +106,7 @@ class DelVar(VarBase):
 
     def set_params(self, params):
         super().set_params(params)
-        block = self.scope_block
+        block = self.params[1]
         var = params[0].values[-1]
         while True:
             if var in block.vars:
