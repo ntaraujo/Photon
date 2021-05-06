@@ -24,7 +24,7 @@ if ((Get-Command "git.exe" -ErrorAction SilentlyContinue) -eq $null)
 }
 
 if (Get-Variable 'dependencies' -ErrorAction 'Ignore') {
-  choco install $dependencies -y
+  choco install $dependencies
 }
 
 pip install pyreadline
