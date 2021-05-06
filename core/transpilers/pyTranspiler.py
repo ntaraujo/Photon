@@ -8,34 +8,33 @@ def debug(*args):
 class Transpiler(BaseTranspiler):
     def __init__(self, filename, **kwargs):
         super().__init__(filename, **kwargs)
-        self.filename = self.filename.replace('.w','.c')
-        self.commentSymbol = '//'
-        self.imports = {'#include <stdio.h>', '#include <stdlib.h>', '#include <locale.h>'}
-        self.funcIdentifier = '/*def*/'
-        self.constructorName = 'new'
-        self.block = {'typedef ','/*def*/', 'for ','while ','if ','else ', 'int main('}
-        self.true = '1'
-        self.false = '0'
-        self.null = 'NULL'
+        self.filename = self.filename.replace('.w','.py')
+        self.commentSymbol = '#'
+        self.imports = set()
+        self.funcIdentifier = 'def'
+        self.constructorName = '__init__'
+        self.block = {'class ','def ', 'for ','while ','if ','else '}
+        self.true = 'True'
+        self.false = 'False'
+        self.null = 'None'
         self.self = 'self'
-        self.listTypes = set()
-        self.dictTypes = set()
-        self.instanceCounter = 0
         self.nativeTypes = {
-            'float':'double',
-            'int':'long',
-            'str':'char*',
-            'bool':'int',
-            'unknown':'auto',
+            'float':'float',
+            'int':'int',
+            'str':'str',
+            'bool':'bool',
+            'unknown':'',
         }
 
     def formatVarInit(self, name, varType):
-        return f'{varType} {name};'
-    
-    def formatStr(self, string):
-        #TODO: handle format strings
-        return string
+        if varType:
+            return f'{name}:{varType} = None'
+        return f'{name} = None'
 
+    def formatStr(self, string):
+        string = string[1:-1].replace('"','\"')
+        return f'f"{string}"'
+    
     def formatAssign(self, target, expr):
         cast = None
         if target['token'] == 'var':
@@ -56,56 +55,45 @@ class Transpiler(BaseTranspiler):
         else:
             raise SyntaxError(f'Format assign with variable {target} not implemented yet.')
         formattedExpr = self.formatExpr(expr, cast=cast)
-        return f'{varType} {variable} = {formattedExpr};'
+        if varType:
+            return f'{variable}:{varType} = {formattedExpr}'
+        return f'{variable} = {formattedExpr}'
 
     def formatExpr(self, value, cast=None):
         #TODO: implement cast to type
         return value['value']
     
     def formatIf(self, expr):
-        return f'if ({expr["value"]}) {{'
+        return f'if {expr["value"]}:'
 
     def formatElif(self, expr):
-        return f'}} else if ({expr["value"]}) {{'
+        return f'elif {expr["value"]}:'
 
     def formatElse(self):
-        return '} else {'
+        return 'else:'
 
     def formatEndIf(self):
-        return '}'
+        return '#end'
     
     def div(self, arg1, arg2):
-        return {'value':f'({self.nativeType("float")}){arg1["value"]} / {arg2["value"]}', 'type':'float'}
+        return {'value':f'({arg1["value"]} / {arg2["value"]}', 'type':'float'}
 
     def formatPrint(self, value):
-        if value['type'] == 'int':
-            return f'printf("%d\\n", {value["value"]});'
-        elif value['type'] == 'float':
-            return f'printf("%f\\n", {value["value"]});'
-        elif value['type'] == 'str':
-            return f'printf("%s\\n", {value["value"]});'
-        elif value['type'] == 'bool':
-            return f'if ({value["value"]} == 0) {{printf("False\\n");}} else {{printf("True\\n");}}'
-        else:
-            raise SyntaxError(f'Print function with token {value} not supported yet.')
+        return f'print({value["value"]})'
 
     def write(self):
         boilerPlateStart = [
-            'int main() {',
-            'setlocale(LC_ALL, "");',
         ]
         boilerPlateEnd = [
-            'return 0;',
-            '}'
         ]
         indent = 0
         count = 0
         if not 'Sources' in os.listdir():
             os.mkdir('Sources')
         if not self.module:
-            self.filename = 'main.c'
+            self.filename = 'main.py'
         else:
-            self.filename = f'{moduleName}.c'
+            self.filename = f'{moduleName}.py'
             boilerPlateStart = []
             boilerPlateEnd = []
             del self.imports[0]
@@ -116,14 +104,14 @@ class Transpiler(BaseTranspiler):
                 module = imp.split(' ')[-1].replace('.w','').replace('"','')
                 debug(f'Importing {module}')
                 if f'{module}.c' in os.listdir('Sources'):
-                    with open(f'Sources/{module}.c','r') as m:
+                    with open(f'Sources/{module}.py','r') as m:
                         for line in m:
                             f.write(line)
                 else:
                     f.write(imp+'\n')
             for line in [''] + self.outOfMain + [''] + boilerPlateStart + self.source + boilerPlateEnd:
                 if line:
-                    if line[0] == '}':
+                    if line.startswith('#end'):
                         indent -= 4
                 f.write(' '*indent+line+'\n')
                 if self.isBlock(line):
@@ -135,9 +123,6 @@ class Transpiler(BaseTranspiler):
         self.write()
         debug(f'Running {self.filename}')
         try:
-            check_call(['gcc', '-O3', f'Sources/{self.filename}', '-o',
-            'Sources/main'])
+            check_call(['python', f'Sources/{self.filename}'])
         except:
             print('Compilation error. Check errors above.')
-        else:
-            call(['./Sources/main'])

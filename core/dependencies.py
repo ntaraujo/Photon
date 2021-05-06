@@ -37,7 +37,7 @@ def programIsInstalled(name):
         if platform_os == "win":
             return str(os.popen(f'where /q {name} && echo %ERRORLEVEL%').read()).strip() == "0"
         elif platform_os == "unix":
-            return str(os.popen(f'which {name}').read()).strip() != ""
+            return str(os.popen(f'command -v {name}').read()).strip() != ""
         else:
             raise Exception('`platform_os` not supported')
     except Exception as e:
@@ -85,7 +85,7 @@ def chocoInstall():
 def chocoInstaller(name):
     if not chocoInstall():
         return False
-    shell_exec_cmd = "powershell -Command \"Start-Process powershell -Verb RunAs -PassThru -Wait -ArgumentList \\\"/c choco install " + name + " -y; timeout /t 5; exit\\\"\""
+    shell_exec_cmd = "powershell -Command \"Start-Process powershell -Verb RunAs -PassThru -Wait -ArgumentList \\\"/c choco install " + name + "; timeout /t 5; exit\\\"\""
     print('# Installing dependency with Chocolatey - Command: \r\n')
     print(f'{shell_exec_cmd}\r\n')
     print('# Result:')

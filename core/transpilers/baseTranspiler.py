@@ -10,6 +10,7 @@ class BaseTranspiler():
             'printFunc': self.printFunc,
             'expr': self.processVarInit,
             'assign': self.processAssign,
+            'if': self.processIf,
             '+': self.add,
             '-': self.sub,
             '*': self.mul,
@@ -42,6 +43,7 @@ class BaseTranspiler():
         if self.typeKnown(expr['type']):
             return expr['type']
         else:
+            print('Infering type')
             input(expr)
             return 'unknown'
             raise NotImplemented
@@ -72,6 +74,8 @@ class BaseTranspiler():
 
     def getValAndType(self, token):
         if 'value' in token and 'type' in token and self.typeKnown(token['type']):
+            if token['type'] == 'str':
+                token['value'] = self.formatStr(token['value'])
             # Already processed, return
             if 'modifier' in token:
                 token['value'] = token['modifier'] + token['value']
@@ -89,8 +93,7 @@ class BaseTranspiler():
         ops = token['ops']
         if not ops:
             tok = args[0]
-            if tok['token'] == 'var':
-                return self.processVar(tok)
+            return self.getValAndType(tok)
         elif len(args) == 1 and len(ops) == 1:
             # modifier operator
             if self.typeKnown(token['type']):
@@ -127,6 +130,23 @@ class BaseTranspiler():
             varType = self.inferType(expr)
             if self.typeKnown(varType):
                 self.currentScope[variable['value']] = {'type':varType}
+
+    def processIf(self, token):
+        expr = self.processExpr(token['expr'])
+        self.source.append(self.formatIf(expr))
+        for c in token['block']:
+            self.process(c)
+        if 'elifs' in token:
+            for elifStatement in token['elifs']:
+                expr = self.processExpr(elifStatement['expr'])
+                self.source.append(self.formatElif(expr))
+                for c in elifStatement['elifBlock']:
+                    self.process(c)
+        if 'else' in token:
+            self.source.append(self.formatElse())
+            for c in token['else']:
+                self.process(c)
+        self.source.append(self.formatEndIf())
 
     def printFunc(self, token):
         value = self.processExpr(token['expr'])

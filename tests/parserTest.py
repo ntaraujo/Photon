@@ -20,7 +20,7 @@ class ParserTest(unittest.TestCase):
         return struct
         
     def test_printStr(self):
-        struct = self.runFile('/printFunc/printStr.w')
+        struct = self.runFile('printFunc/printStr.w')
         self.assertEqual(struct['token'], 'printFunc')
         self.assertEqual(struct['expr']['args'][0], {'token':'str', 'type':'str', 'value':'"Hello World"'})
 
@@ -168,6 +168,27 @@ class ParserTest(unittest.TestCase):
         self.assertEqual(struct['expr']['args'][0]['modifier'], '-')
         self.assertEqual(struct['expr']['args'][1]['value'], '1')
         self.assertEqual(struct['expr']['ops'], ['+'])
+
+    def test_assignGroup(self):
+        struct = self.runFile('assign/varEqualGroup.w')
+        self.assertEqual(struct['token'], 'assign')
+        self.assertEqual(struct['target']['token'], 'var')
+        self.assertEqual(struct['target']['type'], 'unknown')
+        self.assertEqual(struct['expr']['args'][0]['token'], 'group')
+        self.assertEqual(struct['expr']['args'][0]['expr']['args'][0]['value'], '1')
+        self.assertEqual(struct['expr']['args'][0]['expr']['args'][1]['value'], '2')
+        self.assertEqual(struct['expr']['args'][0]['expr']['ops'], ['+'])
+
+    def test_assignModifierGroup(self):
+        struct = self.runFile('assign/varEqualModifierGroup.w')
+        self.assertEqual(struct['token'], 'assign')
+        self.assertEqual(struct['target']['token'], 'var')
+        self.assertEqual(struct['target']['type'], 'unknown')
+        self.assertEqual(struct['expr']['args'][0]['token'], 'group')
+        self.assertEqual(struct['expr']['args'][0]['expr']['args'][0]['value'], '1')
+        self.assertEqual(struct['expr']['args'][0]['expr']['args'][1]['value'], '2')
+        self.assertEqual(struct['expr']['args'][0]['expr']['ops'], ['+'])
+        self.assertEqual(struct['expr']['args'][0]['modifier'], '-')
 
 if __name__ == "__main__":
     unittest.main()
